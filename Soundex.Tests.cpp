@@ -9,7 +9,7 @@ void testGenerateSoundex() {
     char soundex[5];
 
     // Test case 1: name
-    generateSoundex("Vijay", soundex);
+    generateSoundex("Sharaj", soundex);
     assert(strcmp(soundex, "V200") == 0);
 
     // Test case 2: Name with repeated leyters
