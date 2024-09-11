@@ -5,49 +5,46 @@
 #include <ctype.h>
 #include <string.h>
 
-void initializeSoundexTable(char *table) {
-    table['A'] = '0'; table['E'] = '0'; table['I'] = '0'; table['O'] = '0'; table['U'] = '0';
-    table['H'] = '0'; table['W'] = '0'; table['Y'] = '0';
-    table['B'] = '1'; table['F'] = '1'; table['P'] = '1'; table['V'] = '1';
-    table['C'] = '2'; table['G'] = '2'; table['J'] = '2'; table['K'] = '2'; table['Q'] = '2'; table['S'] = '2'; table['X'] = '2'; table['Z'] = '2';
-    table['D'] = '3'; table['T'] = '3';
-    table['L'] = '4';
-    table['M'] = '5'; table['N'] = '5';
-    table['R'] = '6';
-}
-
+// Function to get the Soundex code for a character
 char getSoundexCode(char c) {
-    static char soundexTable[256];
-    initializeSoundexTable(soundexTable);
-    return soundexTable[(unsigned char)toupper(c)];
+    static const char soundexCodes[26] = {'0', '1', '2', '3','0',  '1',  '2',  '0','0',  '2',  '2', '4','5', '5', '0',  '1', '2', '6','2', '3','0', '1',  '0', '2','0', '2'};
+
+    c = toupper(c);
+    unsigned int index = c - 'A';
+    return (index < 26) ? soundexCodes[index] : '0';
+}
+void Soundex_init(char *soundex, char firstLetter) {
+    soundex[0] = toupper(firstLetter);
 }
 
-void appendCodeToSoundex(char code, char *soundex, int sIndex) {
-if (code != '0' && code != soundex[sIndex - 1]) {
-            soundex[sIndex++] = code;
+void Read_characters(char currentChar, char *soundex, int *sIndex, char *previousCode) {
+    char code = getSoundexCode(currentChar);
+    if (code != '0' && code != *previousCode) {
+        soundex[(*sIndex)++] = code;
+        *previousCode = code;
     }
 }
 
-void generateSoundexPattern(int len,int sIndex, const char *name, char *soundex) {
- for (int i = 1; i < len && sIndex < 4; i++) {
-        char code = getSoundexCode(name[i]);
-        appendCodeToSoundex(code,soundex,sIndex);
+void Write_characters(const char *name, char *soundex, int *sIndex, char *previousCode) {
+    for (int i = 1; name[i] != '\0' && *sIndex < 4; i++) {
+        Read_characters(name[i], soundex, sIndex, previousCode);
     }
 }
 
-void appendNullCharacter(char *soundex, int sIndex) {
- while (sIndex < 4) {
-        soundex[sIndex++] = '0';
+void Zerro_Padding(char *soundex, int *sIndex) {
+    while (*sIndex < 4) {
+        soundex[(*sIndex)++] = '0';
     }
-    soundex[4] = '\0';
 }
 
 void generateSoundex(const char *name, char *soundex) {
-    int len = strlen(name);
-    soundex[0] = toupper(name[0]);
+    Soundex_init(soundex, name[0]);
+    char previousCode = getSoundexCode(name[0]);
     int sIndex = 1;
-    generateSoundexPattern(len,sIndex,name,soundex);
-    appendNullCharacter(soundex, sIndex);
-}
 
-#endif // SOUNDEX_H
+    Write_characters(name, soundex, &sIndex, &previousCode);
+    Zerro_Padding(soundex, &sIndex);
+
+    soundex[4] = '\0';
+}
+#endif
