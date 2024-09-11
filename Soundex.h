@@ -5,44 +5,49 @@
 #include <ctype.h>
 #include <string.h>
 
-// Lookup table for Soundex codes
-static const char soundexTable[26] = {
-    '0', '1', '2', '3', '0', '1', '2', '0', '0', '2', // A-J
-    '2', '4', '5', '5', '0', '1', '2', '6', '2', '3', // K-T
-    '0', '1', '0', '2', '0', '2'  // U-Z
-};
-
-// Get the Soundex code using the lookup table
-char getSoundexCode(char c) {
-    c = toupper(c);  // Convert to uppercase to handle both cases
-    if (c >= 'A' && c <= 'Z') {
-        return soundexTable[c - 'A'];  // Map character to Soundex code using lookup table
-    }
-    return '0';  // Default return value for non-alphabet characters
+void initializeSoundexTable(char *table) {
+    table['A'] = '0'; table['E'] = '0'; table['I'] = '0'; table['O'] = '0'; table['U'] = '0';
+    table['H'] = '0'; table['W'] = '0'; table['Y'] = '0';
+    table['B'] = '1'; table['F'] = '1'; table['P'] = '1'; table['V'] = '1';
+    table['C'] = '2'; table['G'] = '2'; table['J'] = '2'; table['K'] = '2'; table['Q'] = '2'; table['S'] = '2'; table['X'] = '2'; table['Z'] = '2';
+    table['D'] = '3'; table['T'] = '3';
+    table['L'] = '4';
+    table['M'] = '5'; table['N'] = '5';
+    table['R'] = '6';
 }
-// Helper function to add a character to soundex if it's valid
- void addSoundexChar(char *soundex, int *sIndex, char code) 
- {
-       if (code != '0' && code != soundex[*sIndex - 1])
-       {
-          soundex[(*sIndex)++] = code;
-      }
- }
+
+char getSoundexCode(char c) {
+    static char soundexTable[256];
+    initializeSoundexTable(soundexTable);
+    return soundexTable[(unsigned char)toupper(c)];
+}
+
+void appendCodeToSoundex(char code, char *soundex, int sIndex) {
+if (code != '0' && code != soundex[sIndex - 1]) {
+            soundex[sIndex++] = code;
+    }
+}
+
+void generateSoundexPattern(int len,int sIndex, const char *name, char *soundex) {
+ for (int i = 1; i < len && sIndex < 4; i++) {
+        char code = getSoundexCode(name[i]);
+        appendCodeToSoundex(code,soundex,sIndex);
+    }
+}
+
+void appendNullCharacter(char *soundex, int sIndex) {
+ while (sIndex < 4) {
+        soundex[sIndex++] = '0';
+    }
+    soundex[4] = '\0';
+}
 
 void generateSoundex(const char *name, char *soundex) {
     int len = strlen(name);
-    soundex[0] = toupper(name[0]);  // Convert the first letter to uppercase
-    int sIndex = 1;  // Start filling the code from the second position
-
-    // Generate the Soundex code for the rest of the name
-    for (int i = 1; i < len && sIndex < 4; i++) {
-        addSoundexChar(soundex, &sIndex, getSoundexCode(name[i]));
-    }
-
-    // Pad with '0's if the Soundex code is less than 4 characters
-    memset(&soundex[sIndex], '0', 4 - sIndex);  // Fill remaining with '0's
-    soundex[4] = '\0';  // Null-terminate the Soundex code
+    soundex[0] = toupper(name[0]);
+    int sIndex = 1;
+    generateSoundexPattern(len,sIndex,name,soundex);
+    appendNullCharacter(soundex, sIndex);
 }
-
 
 #endif // SOUNDEX_H
