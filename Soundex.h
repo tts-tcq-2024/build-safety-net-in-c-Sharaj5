@@ -13,7 +13,7 @@ void initializeSoundexTable(char *table) {
     table['D'] = '3'; table['T'] = '3';
     table['L'] = '4';
     table['M'] = '5'; table['N'] = '5';
-    table['R'] = '6';
+    table['R'] = '6'; 
 }
 
 char getSoundexCode(char c) {
